@@ -1,13 +1,66 @@
 import { Hono } from 'hono'
+import { PrismaClient } from '@prisma/client/edge'
+import { withAccelerate } from '@prisma/extension-accelerate'
+import { decode, sign, verify } from 'hono/jwt'
 
-const app = new Hono()
+const app = new Hono<{
+  Bindings:{
+    DATABASE_URL:string;
+    JWT_SECRET:string;
+  }
+}>
 
-app.post('/api/v1/user/signup', (c) => {
-  return c.text('Hello Hono!')
+app.post('/api/v1/user/signup', async (c) => {
+  const body = await c.req.json();
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+}).$extends(withAccelerate())
+
+  try {
+    const user = await prisma.user.create({
+      data:{
+        username:body.username,
+        password:body.password,
+        name:body.name
+      }
+    })
+    const jwt = await sign({
+      id: user.id
+    }, c.env.JWT_SECRET);
+    return c.text(jwt)
+  }
+  catch (e) {
+    c.status(411);
+    return c.text("Invalid ")
+  }
 })
 
-app.post('/api/v1/user/signin', (c) => {
-  return c.text('Hello Hono!')
+app.post('/api/v1/user/signin', async (c) => {
+  const body = await c.req.json();
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+}).$extends(withAccelerate())
+
+  try {
+    const user = await prisma.user.findFirst({
+      where:{
+        username:body.username,
+        password:body.password,
+      }
+    })
+    if (!user) {
+      c.status(403); 
+      return c.text("Incorrect creds")
+    }
+    const jwt = await sign({
+      id: user.id
+    }, c.env.JWT_SECRET);
+    return c.text(jwt)
+  }
+  catch (e) {
+    c.status(411);
+    return c.text("Invalid ")
+  }
 })
 
 app.put('/api/v1/blog', (c) => {
@@ -25,5 +78,3 @@ app.get('/api/v1/blog/blog', (c) => {
 export default app
 
 
-// postgres://avnadmin:AVNS_rq-fuGadP0Gx-ETwGUb@pg-15d3bd8d-amal-test.k.aivencloud.com:21081/defaultdb?sslmode=require
-// DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiYTQwZjFhZDQtZTI3Ni00ZTU4LTlhOWQtNjBiNjRkMWQyN2NkIiwidGVuYW50X2lkIjoiMGUyMTE2MTcwNmIwMTk0NWE3MTJhMjQ0ZjdjNzQxNGMxOTNkZDk4OTc3N2NmMzhhZTIwMmJjM2ZmZDJkYjZhOCIsImludGVybmFsX3NlY3JldCI6IjYyNjk2Nzc0LWFiMDYtNDU0OC1hNjFiLTc2NmQ1ZTM0YmRhYiJ9.sUvsa-VZE1RA_jWzZwQIPItf_RSg05Zr_uiqBoYNb6E"
