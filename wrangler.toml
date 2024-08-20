@@ -1,8 +1,8 @@
 name = "textual"
 compatibility_date = "2024-08-20"
 
-# [vars]
-# MY_VAR = "my-variable"
+[vars]
+DATABASE_URL = "prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiYTQwZjFhZDQtZTI3Ni00ZTU4LTlhOWQtNjBiNjRkMWQyN2NkIiwidGVuYW50X2lkIjoiMGUyMTE2MTcwNmIwMTk0NWE3MTJhMjQ0ZjdjNzQxNGMxOTNkZDk4OTc3N2NmMzhhZTIwMmJjM2ZmZDJkYjZhOCIsImludGVybmFsX3NlY3JldCI6IjYyNjk2Nzc0LWFiMDYtNDU0OC1hNjFiLTc2NmQ1ZTM0YmRhYiJ9.sUvsa-VZE1RA_jWzZwQIPItf_RSg05Zr_uiqBoYNb6E"
 
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"
