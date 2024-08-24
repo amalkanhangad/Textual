@@ -3,20 +3,20 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 import {Hono} from "hono"
 import { verify } from "hono/jwt";
 export const blogRouter = new Hono<{
-Bindings:{
-    DATABASE_URL: string;
-    JWT_SECRET: string;
-},
-Varibles:{
-    UserId: string;
-}
+    Bindings:{
+        DATABASE_URL: string;
+        JWT_SECRET: string;
+    },
+    Varibles:{
+        userId: string;
+    }
 }>;
 
 blogRouter.use("/*",async (c, next) => {
     const authHeader = c.req.header("authorization") || "";
     const user = await verify(authHeader, c.env.JWT_SECRET);
     if(user){
-        c.set("UserID", user.id);
+        c.set("userId", user.id);
         next();
     }else{
         c.status(403);
@@ -28,6 +28,7 @@ blogRouter.use("/*",async (c, next) => {
 
 blogRouter.post('/', async (c) => {
     const body = await c.req.json();
+    const authorID = c.get("userId") 
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
